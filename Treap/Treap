@@ -1,0 +1,70 @@
+mt19937 mrand(random_device{} ());
+int rnd(int x = inf) {
+	return mrand() % x;
+}
+
+struct Node{
+	int x, y;
+	int cnt = 0;
+	ll summa;
+	Node* left;
+	Node* right;
+	Node(int x = 0){
+		this -> x = x;
+		this -> y = rnd();
+		this -> cnt = 1;
+		this -> summa = x;
+		this -> left = nullptr;
+		this -> right = nullptr;
+	} 
+};
+
+void update(Node* &v){
+	if (v == NULL)
+		return;
+	v -> cnt = 1;
+	v -> summa = v -> x;
+	if (v -> left != NULL){
+		v -> cnt += v -> left -> cnt;
+		v -> summa += v -> left -> summa;
+	}
+	if (v -> right != NULL){
+		v -> cnt += v -> right -> cnt;
+		v -> summa += v -> right -> summa;
+	}
+}
+
+Node* merge(Node* a, Node* b){
+	if (a == NULL)
+		return b;
+	if (b == NULL)
+		return a;
+	if (a -> y < b -> y){
+		a -> right = merge(a -> right, b);
+		update(a);
+		return a;
+	}
+	else{
+		b -> left = merge(a, b -> left);
+		update(b);
+		return b;
+	}
+}
+
+pair<Node*, Node*> split(Node* v, int x){
+	if (v == NULL)
+		return {v, v};
+	pair<Node*, Node*> u;
+	if (v -> x >= x){
+		u = split(v -> left, x);
+		v -> left = u.second;
+		update(v);
+		return {u.first, v};
+	}
+	else{
+		u = split(v -> right, x);
+		v -> right = u.first;
+		update(v);
+		return {v, u.second};
+	}
+}
