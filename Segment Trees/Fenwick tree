@@ -1,0 +1,31 @@
+struct FenwickTree{
+	int n;
+	vector<ll> tree;
+
+	FenwickTree(int n){
+		this -> n = n;
+		tree.resize(n + 1);
+		fill(tree.begin(), tree.end(), 0);
+	}
+
+	void update(int pos, ll v){
+		pos++;
+		while (pos <= n){
+			tree[pos] += v;
+			pos |= pos + 1;
+		}
+	}
+
+	ll getSum(int r){
+		ll answer = 0;
+		while (r > 0){
+			answer += tree[r];
+			r = (r & (r + 1)) - 1;
+		}
+		return answer;
+	}
+
+	ll get(int l, int r){
+		return getSum(r) - getSum(l);
+	}
+};
