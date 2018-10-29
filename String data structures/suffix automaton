@@ -1,0 +1,57 @@
+const int MAX = 2e5 + 7; // MAX must be not less than 2 * s.size()
+const int W = 26;
+int go[MAX][W];
+int suff[MAX], len[MAX];
+bool terminal[MAX];
+
+int build(string &s){
+	int n = s.size();
+	for (int i = 0; i < 2 * n; i++)
+		fill(go[i], go[i] + W, -1);
+	fill(suff, suff + 2 * n, -1);
+	fill(len, len + 2 * n, -1);
+	fill(terminal, terminal + 2 * n, 0);
+
+
+	int last = 0;
+	len[0] = 0;
+	int cur = 1;
+	for (char ch : s){
+		int c = int(ch - 'a');
+		int p = last;
+		len[cur] = len[last] + 1;
+		last = cur;
+		while (p >= 0 && go[p][c] == -1){
+			go[p][c] = cur;
+			p = suff[p];
+		}
+		if (p != -1){
+			int q = go[p][c];
+			if (len[p] + 1 == len[q])
+				suff[cur] = q;
+			else{
+				int clone = cur + 1;
+				for (int i = 0; i < W; i++)
+					go[clone][i] = go[q][i];
+				suff[clone] = suff[q];
+
+				len[clone] = len[p] + 1;
+				suff[q] = clone;
+				suff[cur] = clone;
+				while (p >= 0 && go[p][c] == q){
+					go[p][c] = clone;
+					p = suff[p];
+				}
+				cur++;
+			}	
+		}
+		else
+			suff[cur] = 0;
+		cur++;
+	}
+	while (last >= 0){
+		terminal[last] = 1;
+		last = suff[last];
+	}
+	return cur;
+}
