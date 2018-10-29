@@ -1,0 +1,82 @@
+namespace suffArray{
+
+	const int MAX = 1e5 + 7;
+	int cnt[MAX], color[MAX], cur[MAX], p[MAX], par[MAX];
+
+	vector<int> getSuffArray(const vector<int> &s){
+		int n = s.size();
+		for (int i = 0; i < n; i++)
+			cnt[s[i] + 1]++;
+		cnt[0] = 1;
+		int classes = 150;
+		for (int i = 1; i < classes; i++)
+			cnt[i] += cnt[i - 1];
+		p[0] = n;
+		for (int i = 0; i < n; i++)
+			p[--cnt[s[i] + 1]] = i;
+		color[n] = 0;
+		n++;
+		for (int i = 1; i < n; i++){
+			color[p[i]] = color[p[i - 1]];
+			if (i == 1 || s[p[i]] != s[p[i - 1]])
+				color[p[i]]++;
+		}
+		classes = color[p[n - 1]] + 1;
+		for (int h = 0; (1 << h) < n; h++){
+			for (int i = 0; i < n; i++){
+				par[i] = p[i] - (1 << h);
+				if (par[i] < 0)
+					par[i] += n;
+			}
+			for (int i = 0; i < classes; i++)
+				cnt[i] = 0;
+			for (int i = 0; i < n; i++)
+				cnt[color[i]]++;
+			for (int i = 1; i < classes; i++)
+				cnt[i] += cnt[i - 1];
+			for (int i = n - 1; i >= 0; i--)
+				p[--cnt[color[par[i]]]] = par[i];
+			cur[p[0]] = 0;
+			for (int i = 1; i < n; i++){
+				int r1 = p[i] + (1 << h);
+				if (r1 >= n)
+					r1 -= n;
+				int r2 = p[i - 1] + (1 << h);
+				if (r2 >= n)
+					r2 -= n;
+				cur[p[i]] = cur[p[i - 1]];
+				if (color[p[i]] != color[p[i - 1]] || color[r1] != color[r2])
+					cur[p[i]]++;
+			}
+			for (int i = 0; i < n; i++)
+				color[i] = cur[i];
+			classes = color[p[n - 1]] + 1;
+		}
+		vector<int> answer(n - 1);
+		for (int i = 0; i < n - 1; i++)
+			answer[i] = p[i + 1];
+		return answer;
+	}
+
+	int index[MAX];
+
+	vector<int> getLCP(const vector<int> &s, const vector<int> &suff){
+		int n = s.size();
+		for (int i = 0; i < s.size(); i++)
+			index[suff[i]] = i;
+		vector<int> answer(n, 0);
+		int k = 0;
+		for (int i = 0; i < n; i++){
+			if (index[i] == n - 1){
+				k = 0;
+				continue;
+			}
+			int j = suff[index[i] + 1];
+			while (i + k < n && j + k < n && s[i + k] == s[j + k])
+				k++;
+			answer[index[i]] = k;
+			k = max(k - 1, 0);
+		}
+		return answer;
+	}
+}
