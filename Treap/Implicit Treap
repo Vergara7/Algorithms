@@ -1,0 +1,141 @@
+
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <set>
+#include <map>
+#include <cmath>
+#include <unordered_map>
+#include <cassert>
+#include <time.h>
+#include <sstream>
+#include <random>
+
+#define floor asdasds
+#define prev asasdasd
+#define next aasdasda
+#define rank asdasdknlasd
+#define move asdasdas
+
+using namespace std;
+
+typedef long long ll;
+typedef double dbl;
+
+template<class T>
+void print(vector<T> s){
+	for (T x : s)
+		cout << x << " "; 
+	cout << endl;
+}
+
+const int MAX_MEM = 1e8;
+int mpos = 0;
+char mem[MAX_MEM];
+void* operator new(size_t n) {
+	assert((mpos += n) <= MAX_MEM);
+	return (void *)(mem + mpos - n);
+}
+void operator delete(void*) noexcept { }
+
+mt19937 mrand(random_device{} ());
+int rnd(int x = INT_MAX) {
+	return mrand() % x;
+}
+
+struct Node{
+	int x, y;
+	int cnt;
+	ll summa;
+	Node* left;
+	Node* right;
+	Node(int x = 0) : x(x), y(rnd()), cnt(1), summa(x), 
+										left(nullptr), right(nullptr) {}
+};
+
+void update(Node* &v){
+	if (v == NULL)
+		return;
+	v -> cnt = 1;
+	v -> summa = v -> x;
+	if (v -> left != NULL){
+		v -> cnt += v -> left -> cnt;
+		v -> summa += v -> left -> summa;
+	}
+	if (v -> right != NULL){
+		v -> cnt += v -> right -> cnt;
+		v -> summa += v -> right -> summa;
+	}
+}
+
+Node* merge(Node* a, Node* b){
+	if (a == NULL)
+		return b;
+	if (b == NULL)
+		return a;
+	if (a -> y < b -> y){
+		a -> right = merge(a -> right, b);
+		update(a);
+		return a;
+	}
+	else{
+		b -> left = merge(a, b -> left);
+		update(b);
+		return b;
+	}
+}
+
+pair<Node*, Node*> split(Node* v, int k){
+	if (v == NULL)
+		return {v, v};
+	pair<Node*, Node*> u;
+	int cnt = 1;
+	if (v -> left != NULL)
+		cnt += v -> left -> cnt;
+	if (cnt > k){
+		u = split(v -> left, k);
+		v -> left = u.second;
+		update(v);
+		return {u.first, v};
+	}
+	else{
+		u = split(v -> right, k - cnt);
+		v -> right = u.first;
+		update(v);
+		return {v, u.second};
+	}
+}
+
+void printTreap(Node* v){
+	if (v == NULL)
+		return;
+	printTreap(v -> left);
+	cout << v -> x << " ";
+	printTreap(v -> right);
+}
+
+
+int main() {	
+	ios_base::sync_with_stdio(0);
+	cin.tie(0);
+	srand(time(NULL));
+	// freopen("test.in", "r", stdin);
+	freopen("movetofront.in", "r", stdin);
+	freopen("movetofront.out", "w", stdout);
+	Node* root = NULL;
+	int n, m;
+	cin >> n >> m;
+	for (int i = 0; i < n; i++)
+		root = merge(root, new Node(i + 1));
+	pair<Node*, Node*> v, u;
+	while (m-- > 0){
+		int l, r;
+		cin >> l >> r;
+		v = split(root, l - 1);
+		u = split(v.second, r - l + 1);
+		root = merge(merge(u.first, v.first), u.second);
+	}
+	printTreap(root);
+	return 0;
+}
