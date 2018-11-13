@@ -1,0 +1,110 @@
+mt19937 mrand(random_device{} ());
+int rnd(int x = 1e9) {
+    return mrand() % x;
+}
+
+struct Node{
+    int x;
+    int cnt;
+    ll summa;
+    int left, right;
+    Node(int x = 0) : x(x), cnt(1), summa(x), left(-1), right(-1) {}
+};
+
+const int maxNodes = 3e7;
+int cur = 0;
+Node s[maxNodes];
+
+void update(int v){
+    if (v == -1)
+        return;
+    s[v].summa = s[v].x;
+    s[v].cnt = 1;
+    if (s[v].left != -1){
+        s[v].cnt += s[s[v].left].cnt;
+        s[v].summa += s[s[v].left].summa;
+    }
+    if (s[v].right != -1){
+        s[v].cnt += s[s[v].right].cnt;
+        s[v].summa += s[s[v].right].summa;
+    }
+}
+
+void clone(int old, int cur){
+    s[cur].x = s[old].x;
+    s[cur].cnt = s[old].cnt;
+    s[cur].summa = s[old].summa;
+    s[cur].left = s[old].left;
+    s[cur].right = s[old].right;
+}
+
+int merge(int a, int b){
+    if (b == -1)
+        return a;
+    if (a == -1)
+        return b;
+    int prob = rnd(s[a].cnt + s[b].cnt);
+    // int prob = 0;
+    int now = cur++;
+    if (prob < s[a].cnt){
+        clone(a, now);
+        s[now].right = merge(s[a].right, b); 
+    }
+    else{
+        clone(b, now);
+        s[now].left = merge(a, s[b].left);
+    }
+    update(now);
+    return now;
+}
+
+pair<int, int> split(int a, int k){
+    if (a == -1)
+        return {-1, -1};
+    int cnt = 1;
+    if (s[a].left != -1)
+        cnt += s[s[a].left].cnt;
+    pair<int, int> b;
+    int now = cur++;
+    clone(a, now);
+    if (cnt <= k){
+        b = split(s[a].right, k - cnt);
+        s[now].right = b.first;
+        update(now);
+        return {now, b.second};
+    }
+    else{
+        b = split(s[a].left, k);
+        s[now].left = b.second;
+        update(now);
+        return {b.first, now};
+    }
+}
+
+ll getSum(int v, int k){
+    if (v == -1)
+        return 0;
+    int cnt = 1;
+    ll summa = s[v].x;
+    if (s[v].left != -1){
+        cnt += s[s[v].left].cnt;
+        summa += s[s[v].left].summa;
+    }
+    if (cnt <= k)
+        return summa + getSum(s[v].right, k - cnt);
+    return getSum(s[v].left, k);
+}
+
+void printTree(int v, int l, int r){
+    if (v == -1 || s[v].cnt < l)
+        return;
+    int cnt = 0;
+    if (s[v].left != -1)
+        cnt += s[s[v].left].cnt;
+    if (cnt >= l)
+        printTree(s[v].left, l, r);
+    if (cnt + 1 >= l && cnt + 1 <= r)
+        cout << s[v].x << " ";
+    if (cnt + 1 < r)
+        printTree(s[v].right, max(l - cnt - 1, 0), r - cnt - 1);
+}
