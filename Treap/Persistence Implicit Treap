@@ -108,3 +108,30 @@ void printTree(int v, int l, int r){
     if (cnt + 1 < r)
         printTree(s[v].right, max(l - cnt - 1, 0), r - cnt - 1);
 }
+
+const int buffer = 1e6 + 7;
+Node lst[buffer];
+
+int rebuild(int root){
+    cur = 0;
+    vector<int> q(1, root);
+    int now = 0;
+    while (now < q.size()){
+        int v = q[now++];
+        lst[cur].x = s[v].x;
+        lst[cur].cnt = s[v].cnt, lst[cur].summa = s[v].summa;
+        lst[cur].left = -1, lst[cur].right = -1;
+        if (s[v].left != -1){
+            lst[cur].left = q.size();
+            q.push_back(s[v].left);
+        } 
+        if (s[v].right != -1){
+            lst[cur].right = q.size();
+            q.push_back(s[v].right);
+        }
+        cur++;
+    }
+    for (int i = 0; i < cur; i++)
+        s[i] = lst[i];
+    return 0;
+}
