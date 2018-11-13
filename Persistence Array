@@ -1,0 +1,42 @@
+struct Node{
+    int x;
+    int l, r;
+    Node* left;
+    Node* right;
+    Node(int x = 0, int l = 0, int r = 0) : x(x), l(l), r(r) {
+        this -> left = nullptr;
+        this -> right = nullptr;
+    }
+};
+
+Node* update(Node* v, int pos, int val){
+    // cout << v -> l << " " << v -> r << " " << pos << endl;
+    if (v -> l > pos || v -> r <= pos)
+        return v;
+    Node* u = new Node(0, v -> l, v -> r);
+    u -> left = v -> left, u -> right = v -> right;
+    if (u -> l == pos && u -> r == pos + 1){
+        u -> x = val;
+        return u;
+    }
+    u -> left = update(u -> left, pos, val);
+    u -> right = update(u -> right, pos, val);
+    return u;
+}
+
+int get(Node* v, int pos){
+    if (v -> l > pos || v -> r <= pos)
+        return 0;
+    if (v -> l == pos && v -> r == pos + 1)
+        return v -> x;
+    return get(v -> left, pos) + get(v -> right, pos);
+}
+
+Node* build(Node* v){
+    if (v -> r - v -> l == 1)
+        return v;
+    int m = (v -> l + v -> r) / 2;
+    v -> left = build(new Node(0, v -> l, m));
+    v -> right = build(new Node(0, m, v -> r));
+    return v;
+}
