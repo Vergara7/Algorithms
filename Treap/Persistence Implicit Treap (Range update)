@@ -1,0 +1,148 @@
+const int base = 31; 
+
+mt19937 mrand(random_device{} ());
+ll rnd(ll x) {
+    return (((ll)mrand() << base) + (ll)mrand()) % x;
+}
+
+const ll inf = 1e18;
+
+int numberOfNodes = 0;
+
+struct Node{
+    int x;
+    ll cnt;
+    int add;
+    int h;
+    Node* left;
+    Node* right;
+    Node(int x, ll cnt = 1) : x(x), cnt(cnt), add(0), left(nullptr), right(nullptr) {
+        assert(cnt < inf);
+        numberOfNodes++;
+    }
+};
+
+Node* clone(Node* &v){
+    if (v == nullptr)
+        return nullptr;
+    Node* u = new Node(v -> x, v -> cnt);
+    u -> left = v -> left;
+    u -> right = v -> right;
+    u -> h = v -> h;
+    return u;
+}
+
+Node* push(Node* v){
+    if (v == nullptr)
+        return nullptr;
+    Node* u = clone(v);
+    if (v -> left != nullptr){
+        Node* leftC = clone(v -> left);
+        leftC -> add = v -> left -> add + v -> add;
+        u -> left = leftC;
+    }
+    if (v -> right != nullptr){
+        Node* rightC = clone(v -> right);
+        rightC -> add = v -> right -> add + v -> add;
+        u -> right = rightC;
+    }
+    u -> x += v -> add;
+    v -> add = 0;
+    return u;
+}
+
+void update(Node* &v){
+    if (v == nullptr)
+        return;
+    v -> cnt = 1;
+    v -> h = 0;
+    if (v -> left != nullptr){
+        v -> cnt += v -> left -> cnt;
+        v -> h = max(v -> h, v -> left -> h);
+    }
+    if (v -> right != nullptr){
+        v -> cnt += v -> right -> cnt;
+        v -> h = max(v -> h, v -> right -> h);
+    }
+    v -> h++;
+}
+
+Node* merge(Node* vv, Node* uu){
+    if (vv == nullptr)
+        return uu;
+    if (uu == nullptr)
+        return vv;
+    Node* q;
+    Node* v = push(vv);
+    Node* u = push(uu);
+    ll x = rnd(v -> cnt + u -> cnt);
+    if (x < v -> cnt){
+        v -> right = merge(v -> right, u);
+        update(v);
+        return v;
+    }
+    else{
+        u -> left = merge(v, u -> left);
+        update(u);
+        return u;
+    }
+}
+
+pair<Node*, Node*> split(Node* vv, ll k){
+    if (vv == nullptr)
+        return {vv, vv};
+    Node* v = push(vv);
+    ll cnt = 1;
+    if (v -> left != nullptr)
+        cnt += v -> left -> cnt;
+    pair<Node*, Node*> u;
+    if (cnt <= k){
+        u = split(v -> right, k - cnt);
+        v -> right = u.first;
+        update(v);
+        return {v, u.second};
+    }
+    else{
+        u = split(v -> left, k);
+        v -> left = u.second;
+        update(v);
+        return {u.first, v};
+    }
+}
+
+int get(Node* v, ll k){
+    ll cnt;
+    int now = 0;
+    Node* cur = v;
+    while (cur != nullptr){
+        cnt = 0;
+        if (cur -> left != nullptr)
+            cnt += cur -> left -> cnt;
+        now += cur -> add;
+        if (cnt == k)
+            return cur -> x + now;
+        if (cnt < k){
+            k -= cnt + 1;
+            cur = cur -> right;
+        }
+        else
+            cur = cur -> left;
+    }
+    assert(false);
+    return -1;
+}
+
+Node* print(Node* v, ll k, int now = 0){
+    if (v == nullptr || k <= 0)
+        return v;
+    ll cnt = 0;
+    print(v -> left, k, now);
+    if (v -> left != nullptr)
+        cnt += v -> left -> cnt;
+    if (cnt < k){
+        cout << v -> x << " " << v -> add << " " << now + cnt << endl;
+        cnt++;
+    }
+    print(v -> right, k - cnt, now + cnt);
+    return v;
+}  
