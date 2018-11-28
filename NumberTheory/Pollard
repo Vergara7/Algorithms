@@ -1,0 +1,113 @@
+mt19937 mrand(random_device{} ());
+int rnd(ll x) {
+	return mrand() % x;
+}
+
+ll multiply(ll a, ll b, ll mod){
+	ll kek = (dbl)a * (dbl)b / (dbl)mod;
+	ll lol = a * b - kek * mod;
+	if (lol < 0)
+		lol += mod;
+	if (lol >= mod)
+		lol -= mod;
+	return lol;
+}
+
+ll power(ll a, ll n, ll mod){
+	ll res = 1;
+	while (n > 0){
+		if (n & 1)
+			res = multiply(res, a, mod);
+		a = multiply(a, a, mod);
+		n >>= 1;
+	}
+	return res;
+}
+
+bool isPrime(ll n){
+	if (!(n & 1)){
+		if (n == 2)
+			return true;
+		else
+			return false;
+	}
+	ll s = (n - 1);
+	int k = 0;
+	while (s % 2 == 0){
+		s /= 2;
+		k++;
+	}
+	vector<ll> a = {2, 3, 5, 7, 11, 13, 17, 19, 23};
+	for (ll b : a){
+		if (n % b == 0){
+			if (n == b)
+				return true;
+			return false;
+		}
+		ll res = power(b, s, n);
+		if (res <= 1)
+			continue;
+		for (int j = 0; j < k; j++){
+			ll ress = power(res, 2, n);
+			if (ress == 1){
+				if (res != n - 1)
+					return false;
+				res = ress;
+				break;
+			}
+			res = ress;
+		}
+		if (res != 1)
+			return false;
+	}
+	return true;
+}
+
+ll gcd(ll a, ll b){
+	if (a == 0)
+		return b;
+	if (b == 0)
+		return a;
+	if (!(a & 1) && !(b & 1))
+		return gcd((a >> 1), (b >> 1)) << 1;
+	if (!(a & 1))
+		return gcd(a >> 1, b);
+	if (!(b & 1))
+		return gcd(a, b >> 1);
+	return a > b ? gcd(a - b, b) : gcd(a, b - a);
+}
+
+ll f(ll x, ll mod){
+	x = multiply(x, x, mod);
+	x += 3;
+	if (x >= mod)
+		x -= mod;
+	return x;
+}
+
+void pollard(ll n){
+	if (n < 1e9){
+		int b = 2;
+		while (b * b <= n){
+			if (n % b == 0){
+				cout << b << " " << n / b << endl;
+				return;
+			}
+			b++;
+		}
+	}
+	ll x = 0, y;
+	while (true){
+		x++;
+		y = x;
+		for (int i = 0; i < 1000000; i++){
+			x = f(x, n);
+			y = f(f(y, n), n);
+			ll d = gcd(abs(x - y), n);
+			if (d > 1 && d < n){
+				cout << d << " " << n / d << endl;
+				return;
+			}
+		}
+	}
+}
