@@ -1,0 +1,92 @@
+int gcd(int a, int b){
+    return b > 0 ? gcd(b, a % b) : a;
+}
+
+struct rat{
+    int p, q;
+    rat() : p(0), q(1) {} 
+    rat(int p, int q = 1) {
+        int d = gcd(abs(p), abs(q));
+        if (q < 0){
+            q = -q;
+            p = -p;
+        }
+        this -> p = p / d;
+        this -> q = q / d;
+    }
+};
+
+void print(vector<vector<rat> > s){
+    for (int i = 0; i < s.size(); i++){
+        for (int j = 0; j < s[i].size(); j++)
+            cout << s[i][j].p << " " << s[i][j].q << "   ";
+        cout << endl;
+    }
+}
+
+rat operator + (rat a, rat b) { return rat(a.q * b.p + a.p * b.q, a.q * b.q); }
+rat operator - (rat a, rat b) { return rat(a.p * b.q - a.q * b.p, a.q * b.q); }
+rat operator * (rat a, rat b) { return rat(a.p * b.p, a.q * b.q); }
+rat operator * (rat a, int k) { return rat(a.p * k, a.q); }
+rat operator / (rat a, rat b) { return rat(a.p * b.q, a.q * b.p); }
+rat operator / (rat a, int k) { return rat(a.p, a.q * k); }
+bool operator == (rat a, rat b) { return a.p == b.p && a.q == b.q; }
+bool operator == (rat a, int b) { return a.p == b && a.q == 1; }
+bool operator == (int b, rat a) { return a.p == b && a.q == 1; }
+bool operator != (rat a, rat b) { return !(a == b); }
+bool operator != (rat a, int b) { return !(a == b); }
+bool operator != (int b, rat a) { return !(a == b); }
+
+vector<rat> solution; 
+bool gauss(vector<vector<rat> > &s){
+    int n = s.size();
+    int m = s[0].size() - 1;
+    assert(m >= 0);
+    for (int i = 0; i < min(n, m); i++){
+        for (int x = i; x < n; x++){
+            if (s[x][i] != 0){
+                swap(s[x], s[i]);
+                break;
+            }
+        }
+        if (s[i][i] == 0)
+            continue;
+        for (int j = i + 1; j < n; j++){
+            rat k = s[j][i] / s[i][i];
+            // cout << k.p << " " << k.q << endl;
+            for (int l = i; l < m + 1; l++)
+                s[j][l] = s[j][l] - k * s[i][l];
+        }
+        // print(s);
+        // cout << endl;
+    }
+    solution.resize(m);
+    if (n >= m){
+        if (s[m - 1][m - 1] == 0){
+            if (s[m - 1][m] != 0)
+                return false;
+            solution[m - 1] = rat(0);
+        }
+        else
+            solution[m - 1] = s[m - 1][m] / s[m - 1][m - 1];
+        for (int i = m; i < n; i++){
+            if (solution[m - 1] * s[i][m - 1] != s[i][m])
+                return false;
+        }
+        for (int i = m - 2; i >= 0; i--){
+            rat cur = s[i][m];
+            for (int j = i + 1; j < m; j++)
+                cur = cur - s[i][j] * solution[j];
+            if (s[i][i] != 0)
+                solution[i] = cur / s[i][i];
+            else{
+                if (cur == 0)
+                    solution[i] = 0;
+                else
+                    return false;
+            } 
+        }
+        return true;
+    }
+    return true;
+}
