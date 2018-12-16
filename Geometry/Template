@@ -1,0 +1,45 @@
+const dbl pi = atan2(0, -1);
+
+struct point{
+    ll x, y;
+    point(ll x = 0, ll y = 0) : x(x), y(y) {}
+    int len() { return x * x + y * y; }
+};
+
+istream& operator >> (istream &cin, point &p)
+{
+    cin >> p.x >> p.y;
+    return cin;
+}
+
+ostream& operator << (ostream &cout, point &p)
+{
+    cout << p.x << " " << p.y << "\n";
+    return cout;
+}
+
+point operator - (point a, point b) { return point(a.x - b.x, a.y - b.y); }
+point operator + (point a, point b) { return point(a.x + b.x, a.y + b.y); }
+ll operator * (point a, point b) { return a.x * b.y - a.y * b.x; }
+ll operator % (point a, point b) { return a.x * b.x + a.y * b.y; }
+bool operator == (point a, point b) { return a.x == b.x && a.y == b.y; }
+bool operator != (point a, point b) { return a.x != b.x || a.y != b.y; }
+
+struct line{
+    ll a, b, c;
+    line (point x, point y){
+        this -> a = y.y - x.y;
+        this -> b = x.x - y.x;
+        this -> c = -(this -> a * x.x + this -> b * x.y);
+    }
+};
+
+ll getDist(point a, line l){
+    return a.x * l.a + a.y * l.b + l.c;
+}
+
+int sign(ll x){
+    if (x == 0)
+        return 0;
+    return x > 0 ? 1 : -1;
+}
