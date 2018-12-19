@@ -3,7 +3,8 @@ const dbl pi = atan2(0, -1);
 struct point{
     ll x, y;
     point(ll x = 0, ll y = 0) : x(x), y(y) {}
-    int len() { return x * x + y * y; }
+    ll len2() { return x * x + y * y; }
+    dbl len() { return sqrt(x * x + y * y); }
 };
 
 istream& operator >> (istream &cin, point &p)
