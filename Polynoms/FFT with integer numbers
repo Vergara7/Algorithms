@@ -1,0 +1,89 @@
+namespace fft{
+
+	const int mod = 998244353;
+	const int primitiveRoot = 3;
+
+	int base = 1;
+	vector<int> rev = {0, 1};
+	vector<ll> roots[2] = {{0, 1}, {0, 1}};
+
+	inline int power(ll a, int n){
+		int res = 1;
+		while (n > 0){
+			if (n & 1)
+				res = res * a % mod;
+			a = a * a % mod;
+			n >>= 1;
+		}
+		return res;
+	}
+
+	inline int inv(int a){
+		return power(a, mod - 2);
+	}
+
+	inline void ensureBase(int b){
+		if (b <= base)
+			return;
+
+		rev.resize(1 << b);
+		for (int i = 0; i < (1 << b); i++)
+			rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (b - 1));
+		
+		roots[0].resize(1 << b);
+		roots[1].resize(1 << b);
+		while (base < b){
+			int root = power(primitiveRoot, (mod - 1) / (1 << (base + 1)));
+			int iroot = inv(root);
+			for (int i = (1 << (base - 1)); i < (1 << base); i++){
+				roots[0][i << 1] = roots[0][i];
+				roots[1][i << 1] = roots[1][i];
+				roots[0][(i << 1) | 1] = roots[0][i << 1] * root % mod;
+				roots[1][(i << 1) | 1] = roots[1][i << 1] * iroot % mod;
+			}
+			base++;
+		}
+	}
+
+	inline void fft(vector<int> &f, int n, int flag = 0){
+		int shift = 0;
+		while ((1 << shift) < n)
+			shift++;
+		ensureBase(shift);
+		shift = base - shift;
+		for (int i = 0; i < n; i++)
+			if (i < (rev[i] >> shift))
+				swap(f[i], f[rev[i] >> shift]);
+
+		for (int len = 1; len < n; len <<= 1){
+			for (int i = 0; i < n; i += 2 * len){
+				for (int j = i, k = i + len; j < i + len; j++, k++){
+					ll z = roots[flag][k - i] * f[k] % mod;
+					f[k] = f[j] - z;
+					if (f[k] < 0)
+						f[k] += mod;
+					f[j] = f[j] + z;
+					if (f[j] >= mod)
+						f[j] -= mod;
+				}
+			}
+		}
+	} 
+
+	inline vector<int> multiply(vector<int> a, vector<int> b){
+		int need = a.size() + b.size() - 1;
+		int bb = 0;
+		while ((1 << bb) < need)
+			bb++;
+		bb = (1 << bb);
+		a.resize(bb);
+		fft(a, bb);
+		b.resize(bb);
+		fft(b, bb);
+		for (int i = 0; i < bb; i++)
+			a[i] = (ll)a[i] * b[i] % mod * inv(bb) % mod;
+		fft(a, bb, 1);
+		a.resize(need);
+		return a;
+	}
+}
