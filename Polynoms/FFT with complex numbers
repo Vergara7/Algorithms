@@ -62,7 +62,7 @@ namespace fft{
     vector<Complex> f;
     vector<ll> answer;
 
-    vector<ll> multiply(string &a, string &b){
+    vector<ll> multiply(vector<int> &a, vector<int> &b){
         int need = a.size() + b.size() - 1;
         int bb = 0;
         while ((1 << bb) < need)
@@ -71,8 +71,8 @@ namespace fft{
         int n = (1 << bb);
         f.resize(n);
         for (int i = 0; i < n; i++){
-            f[i].x = (i < a.size() ? a[i] - '0' : 0);
-            f[i].y = (i < b.size() ? b[i] - '0' : 0);
+            f[i].x = (i < a.size() ? a[i] : 0);
+            f[i].y = (i < b.size() ? b[i] : 0);
         }
         fft(f, n);
         Complex r = Complex(0, -0.25 / n);
@@ -86,7 +86,56 @@ namespace fft{
         fft(f, n);
         answer.resize(need);
         for (int i = 0; i < need; i++)
-            answer[i] = (int)(f[i].x + 0.5);
+            answer[i] = (ll)(f[i].x + 0.5);
+        // print(answer);
         return answer;
+    }
+
+    const int k = 15;
+
+    vector<int> multiplyWithMod(vector<int> &a, vector<int> &b, int mod){
+    	int kk = (1 << k);
+    	int kkk = (kk << k) % mod;
+    	int need = a.size() + b.size() - 1;
+    	vector<ll> answer(need, 0);
+    	vector<int> aa(a.size());
+    	vector<int> bb(b.size());
+
+    	for (int i = 0; i < a.size(); i++)
+    		aa[i] = a[i] >> k;
+    	for (int i = 0; i < b.size(); i++)
+    		bb[i] = b[i] >> k; 
+    	vector<ll> c = multiply(aa, bb);
+    	for (int i = 0; i < need; i++){
+    		ll x = c[i] % mod;
+    		answer[i] += x * (kkk - kk);
+    	}
+
+    	for (int i = 0; i < a.size(); i++)
+    		aa[i] = a[i] & (kk - 1);
+    	for (int i = 0; i < b.size(); i++)
+    		bb[i] = b[i] & (kk - 1);
+    	c = multiply(aa, bb);
+    	for (int i = 0; i < need; i++){
+    		ll x = c[i] % mod;
+    		answer[i] += x * (1 - kk);
+    	}
+
+    	for (int i = 0; i < a.size(); i++)
+    		aa[i] += a[i] >> k;
+    	for (int i = 0; i < b.size(); i++)
+    		bb[i] += b[i] >> k;
+    	c = multiply(aa, bb);
+    	for (int i = 0; i < need; i++){
+    		answer[i] += c[i] % mod * kk;
+    		answer[i] %= mod;
+    		if (answer[i] < 0)
+    			answer[i] += mod;
+    	}
+
+    	vector<int> ans(need);
+    	for (int i = 0; i < need; i++)
+    		ans[i] = answer[i];
+    	return ans;
     }
 };
