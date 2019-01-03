@@ -1,23 +1,24 @@
 struct SegmentTreeMax{
+
 	int b;
 	vector<int> tree;
-	static const int inf = 1e9;
+	static const int inf = 1e9 + 7;
 
 	SegmentTreeMax(int n){
 		b = 0;
 		while ((1 << b) < n)
 			b++;
 		b = (1 << b);
-		tree.resize(2 * b - 1);
+		tree.resize(2 * b);
 		fill(tree.begin(), tree.end(), -inf);
 	}
 
-	void update(int pos, int value){
-		pos += b - 1;
+	inline void update(int pos, int value){
+		pos += b;
 		tree[pos] = value;
 		while (pos > 0){
-			pos = ((pos - 1) >> 1);
-			tree[pos] = max(tree[(pos << 1) + 1], tree[(pos << 1) + 2]);
+			pos >>= 1;
+			tree[pos] = max(tree[pos << 1], tree[(pos << 1) | 1]);
 		}
 	}
 
@@ -27,10 +28,34 @@ struct SegmentTreeMax{
 		if (vl >= l && vr <= r)
 			return tree[v];
 		int vm = (vl + vr) >> 1;
-		return max(getMax((v << 1) + 1, vl, vm, l, r), getMax((v << 1) + 2, vm, vr, l, r));
+		return max(getMax(v << 1, vl, vm, l, r), getMax((v << 1) | 1, vm, vr, l, r));
 	}
 
 	ll get(int l, int r){
-		return getMax(0, 0, b, l, r);
+		return getMax(1, 0, b, l, r);
+	}
+
+	int getTheLeftmost(int v, int vl, int vr, int l, int r, int val){
+		if (vl >= r || vr <= l)
+			return -1;
+		int vm = (vl + vr) >> 1;
+		if (vl >= l && vr <= r){
+			if (vr - vl == 1){
+				if (tree[v] >= val)
+					return vl;
+				return -1;
+			}
+			if (tree[v << 1] >= val)
+				return getTheLeftmost(v << 1, vl, vm, l, r, val);
+			return getTheLeftmost((v << 1) | 1, vm, vr, l, r, val);
+		}
+		int x = getTheLeftmost(v << 1, vl, vm, l, r, val);
+		if (x != -1)
+			return x;
+		return getTheLeftmost((v << 1) | 1, vm, vr, l, r, val);
+	}
+
+	int theLeftmost(int l, int r, int val){
+		return getTheLeftmost(1, 0, b, l, r, val);
 	}
 };
