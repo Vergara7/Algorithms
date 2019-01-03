@@ -1,0 +1,61 @@
+struct SegmentTreeSum{
+  
+	int b;
+	vector<ll> tree;
+	vector<ll> add;
+
+	SegmentTreeSum(int n){
+		b = 0;
+		while ((1 << b) < n)
+			b++;
+		b = (1 << b);
+		tree.resize(b << 1);
+		add.resize(b << 1);
+		fill(tree.begin(), tree.end(), 0);
+		fill(add.begin(), add.end(), 0);
+	}
+
+	void push(int v, int vl, int vr){
+		if (vr - vl > 1){
+			add[v << 1] += add[v];
+			add[(v << 1) | 1] += add[v];
+		}
+		tree[v] += add[v] * (vr - vl);
+		add[v] = 0;
+	}
+
+	void updateTree(int v, int vl, int vr, int l, int r, int val){
+		push(v, vl, vr);
+		if (vl >= r || vr <= l)
+			return;
+		if (vl >= l && vr <= r){
+			add[v] += val;
+			push(v, vl, vr);
+			return;
+		}
+		int vm = (vl + vr) >> 1;
+		updateTree(v << 1, vl, vm, l, r, val);
+		updateTree((v << 1) | 1, vm, vr, l, r, val);
+		tree[v] = tree[v << 1] + tree[(v << 1) | 1];
+	}
+
+	void update(int l, int r, int val = 1){
+		updateTree(1, 0, b, l, r, val);
+	}
+
+	ll cntSum(int v, int vl, int vr, int l, int r){
+		push(v, vl, vr);
+		if (vl >= r || vr <= l)
+			return 0;
+		if (vl >= l && vr <= r)
+			return tree[v];
+		int vm = (vl + vr) >> 1;
+		return cntSum(v << 1, vl, vm, l, r) + cntSum((v << 1) | 1, vm, vr, l, r);
+	}
+
+	ll get(int l, int r = -1){
+		if (r == -1)
+			r = l + 1;
+		return cntSum(1, 0, b, l, r);
+	}
+};
