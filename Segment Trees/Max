@@ -55,7 +55,31 @@ struct SegmentTreeMax{
 		return getTheLeftmost((v << 1) | 1, vm, vr, l, r, val);
 	}
 
+	int getTheRightmost(int v, int vl, int vr, int l, int r, int val){
+		if (vl >= r || vr <= l)
+			return -1;
+		int vm = (vl + vr) >> 1;
+		if (vl >= l && vr <= r){
+			if (vr - vl == 1){
+				if (tree[v] >= val)
+					return vl;
+				return -1;
+			}
+			if (tree[(v << 1) | 1] >= val)
+				return getTheLeftmost((v << 1) | 1, vl, vm, l, r, val);
+			return getTheLeftmost(v << 1, vm, vr, l, r, val);
+		}
+		int x = getTheLeftmost((v << 1) | 1, vl, vm, l, r, val);
+		if (x != -1)
+			return x;
+		return getTheLeftmost(v << 1, vm, vr, l, r, val);
+	}
+
 	int theLeftmost(int l, int r, int val){
 		return getTheLeftmost(1, 0, b, l, r, val);
+	}
+
+	int theRightmost(int l, int r, int val){
+		return getTheRightmost(1, 0, b, l, r, val);
 	}
 };
