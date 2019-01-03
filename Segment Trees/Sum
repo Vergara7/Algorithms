@@ -8,16 +8,16 @@ struct SegmentTreeSum{
 		while ((1 << b) < n)
 			b++;
 		b = (1 << b);
-		tree.resize(2 * b - 1);
+		tree.resize(2 * b);
 		fill(tree.begin(), tree.end(), 0);
 	}
 
 	void update(int pos, int value){
-		pos += b - 1;
+		pos += b;
 		tree[pos] = value;
 		while (pos > 0){
-			pos = ((pos - 1) >> 1);
-			tree[pos] = tree[(pos << 1) + 1] + tree[(pos << 1) + 2];
+			pos >>= 1;
+			tree[pos] = tree[pos << 1] + tree[(pos << 1) | 1];
 		}
 	}
 
@@ -27,10 +27,10 @@ struct SegmentTreeSum{
 		if (vl >= l && vr <= r)
 			return tree[v];
 		int vm = (vl + vr) >> 1;
-		return cntSum((v << 1) + 1, vl, vm, l, r) + cntSum((v << 1) + 2, vm, vr, l, r);
+		return cntSum(v << 1, vl, vm, l, r) + cntSum((v << 1) | 1, vm, vr, l, r);
 	}
 
 	ll get(int l, int r){
-		return cntSum(0, 0, b, l, r);
+		return cntSum(1, 0, b, l, r);
 	}
 };
