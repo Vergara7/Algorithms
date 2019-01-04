@@ -1,0 +1,91 @@
+struct edge{
+	int u;
+	int capacity, flow;
+	edge(int u = -1, int capacity = 0, int flow = 0){
+		this -> u = u;
+		this -> capacity = capacity;
+		this -> flow = flow;
+	}
+};
+
+vector<edge> edges;
+
+const int inf = 1e9;
+const int maxn = 6007;
+
+vector<pair<int, int> > s[maxn];
+
+void addEdge(int v, int u, int capacity){
+	s[v].push_back({edges.size(), edges.size() + 1});
+	s[u].push_back({edges.size() + 1, edges.size()});
+	edges.push_back(edge(u, capacity, 0));
+	edges.push_back(edge(v, 0, 0));
+}
+
+
+int dist[maxn];
+int deg[maxn];
+
+int dfs(int v, int fin, int mini, int b){
+	if (v == fin)
+		return mini;
+	while (deg[v] < s[v].size()){
+		int u = edges[s[v][deg[v]].first].u;
+		int w = edges[s[v][deg[v]].first].capacity - edges[s[v][deg[v]].first].flow;
+		if (w < b || dist[u] + 1 != dist[v] || dist[u] == inf){
+			deg[v]++;
+			continue;
+		}
+		int x = dfs(u, fin, min(mini, w), b);
+		if (x == 0)
+			deg[v]++;
+		else{
+			edges[s[v][deg[v]].first].flow += x;
+			edges[s[v][deg[v]].second].flow -= x;
+			return x;
+		}
+	}
+	return 0;
+}
+
+vector<int> q;
+void bfs(int fin, int n, int b){
+	fill(dist, dist + n, inf);
+	dist[fin] = 0;
+	q = {fin};
+	int cur = 0;
+	while (cur < q.size()){
+		int v = q[cur++];
+		for (auto x : s[v]){
+			if (edges[x.second].capacity - edges[x.second].flow < b)
+				continue;
+			int u = edges[x.first].u;
+			if (dist[u] > dist[v] + 1){
+				dist[u] = dist[v] + 1;
+				q.push_back(u);
+			}
+		}
+	}
+}
+
+
+ll maxFlow(int st, int fin, int n){
+	int b = 1 << 1;
+	ll answer = 0;
+	while (b > 0){
+		while (true){
+			bfs(fin, n, b);
+			if (dist[0] == inf)
+				break;
+			fill(deg, deg + n, 0);
+			while (true){
+				int x = dfs(st, fin, inf, b);
+				if (x == 0)
+					break;
+				answer += x;
+			}
+		}
+		b >>= 1;
+	}
+	return answer;
+}
