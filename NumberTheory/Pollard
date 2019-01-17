@@ -4,13 +4,13 @@ int rnd(ll x) {
 }
 
 ll multiply(ll a, ll b, ll mod){
-	ll kek = (dbl)a * (dbl)b / (dbl)mod;
-	ll lol = a * b - kek * mod;
-	if (lol < 0)
-		lol += mod;
-	if (lol >= mod)
-		lol -= mod;
-	return lol;
+	ll div = (dbl)a * (dbl)b / (dbl)mod;
+	ll rem = a * b - kek * mod;
+	if (rem < 0)
+		rem += mod;
+	if (rem >= mod)
+		rem -= mod;
+	return rem;
 }
 
 ll power(ll a, ll n, ll mod){
@@ -85,16 +85,35 @@ ll f(ll x, ll mod){
 	return x;
 }
 
-void pollard(ll n){
+vector<int> s[10000];
+vector<pair<ll, int> > divisors[10000];
+
+const int a = 100;
+
+vector<ll> primes;
+
+void pollard(ll n, int ind){
+	if (n == 1)
+		return;
+	if (isPrime(n)){
+		divisors[ind].push_back({n, 1});
+		return;
+	}
 	if (n < 1e9){
-		int b = 2;
+		int b = a;
 		while (b * b <= n){
 			if (n % b == 0){
-				cout << b << " " << n / b << endl;
-				return;
+				divisors[ind].push_back({b, 0});
+				while (n % b == 0){
+					divisors[ind][divisors[ind].size() - 1].second++;
+					n /= b;
+				}
 			}
 			b++;
 		}
+		if (n > 1)
+			divisors[ind].push_back({n, 1});
+		return;
 	}
 	ll x = 0, y;
 	while (true){
@@ -105,7 +124,8 @@ void pollard(ll n){
 			y = f(f(y, n), n);
 			ll d = gcd(abs(x - y), n);
 			if (d > 1 && d < n){
-				cout << d << " " << n / d << endl;
+				pollard(d, ind);
+				pollard(n / d, ind);
 				return;
 			}
 		}
