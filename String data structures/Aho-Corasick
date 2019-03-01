@@ -1,0 +1,60 @@
+const int maxn = 2e5 + 7;
+
+int len = 1;
+int go[maxn][26];
+int prev[maxn], letter[maxn];
+int sufflink[maxn];
+int cnt[maxn];
+
+void preparation(){
+    for (int i = 0; i < maxn; i++)
+        fill(go[i], go[i] + 26, -1);
+    fill(sufflink, sufflink + maxn, -1);
+    sufflink[0] = 0;
+}
+
+void add(string &s){
+    int cur = 0;
+    for (int i = 0; i < s.size(); i++){
+        int c = int(s[i] - 'a');
+        if (go[cur][c] == -1){
+            go[cur][c] = len;
+            letter[len] = c;
+            prev[len++] = cur;
+        }
+        cur = go[cur][c];
+        cnt[cur]++;
+    }
+}
+
+vector<int> g[maxn];
+
+int getSuflink(int v){
+    if (prev[v] == 0 && sufflink[v] == -1){
+        sufflink[v] = 0;
+        g[0].push_back(v);
+    }
+    if (sufflink[v] != -1)
+        return sufflink[v];
+    int cur = getSuflink(prev[v]);
+    while (cur > 0 && go[cur][letter[v]] == -1)
+        cur = getSuflink(cur);
+    if (go[cur][letter[v]] == -1)
+        sufflink[v] = 0;
+    else
+        sufflink[v] = go[cur][letter[v]];
+    g[sufflink[v]].push_back(v);
+    return sufflink[v];
+}
+
+
+int getGo(int v, int c){
+    if (go[v][c] != -1)
+        return go[v][c];
+    if (v == 0){
+        go[v][c] = 0;
+        return go[v][c];
+    }
+    go[v][c] = getGo(sufflink[v], c);
+    return go[v][c];
+}
