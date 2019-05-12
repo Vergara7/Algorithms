@@ -1,4 +1,4 @@
-struct ConvexHull{ //algorithm works if k is given in increasing order
+struct ConvexHull{ 
    
     typedef long double dbl;
     typedef long long ll;
