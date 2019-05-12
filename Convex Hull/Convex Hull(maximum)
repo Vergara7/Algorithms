@@ -1,0 +1,56 @@
+//k_i must go in increasing order 
+//get returns maximum
+
+struct ConvexHull{ 
+   
+    typedef long double dbl;
+    typedef long long ll;
+
+    struct line{
+        ll k;
+        ll b;
+        line(ll k = 0, ll b = 0) : k(k), b(b) {}
+    };
+
+    dbl intersection(line l1, line l2){
+        assert(l1.k != l2.k);
+        return (dbl)(l2.b - l1.b) / (dbl)(l1.k - l2.k);
+    }
+
+    vector<pair<dbl, line> > s;
+
+    void add(ll k, ll b){
+        line l = line(k, b);
+        while (s.size() > 0){
+            if (s.back().second.k == l.k){
+                s.pop_back();
+                continue;
+            }
+            dbl x = intersection(l, s.back().second);
+            if (x <= s.back().first)
+                s.pop_back();
+            else
+                break;
+        }
+        if (s.size() == 0){
+            s.push_back({-1e18, l});
+            return;
+        }
+        else
+            s.push_back({intersection(l, s.back().second), l});
+    }
+
+    ll get(ll x){
+        int l = 0;
+        int r = s.size();
+        while (l + 1 < r){
+            int m = (l + r) / 2;
+            if (x >= s[m].first)
+                l = m;
+            else
+                r = m;
+        }
+        return s[l].second.k * x + s[l].second.b; 
+    }
+
+};
