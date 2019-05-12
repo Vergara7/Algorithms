@@ -1,5 +1,8 @@
+k_i must go in increasing order
+get returns maximum value
+
 struct ConvexHull{ 
-   
+ 
     typedef long double dbl;
     typedef long long ll;
 
