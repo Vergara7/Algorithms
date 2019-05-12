@@ -1,5 +1,5 @@
-k_i must go in increasing order
-get returns maximum value
+//k_i must go in increasing order
+//get returns maximum value
 
 struct ConvexHull{ 
  
