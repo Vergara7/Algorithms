@@ -93,11 +93,12 @@ namespace fft{
 
     const int k = 15;
 
-    vector<int> multiplyWithMod(vector<int> &a, vector<int> &b, int mod){
+        vector<ll> multiplyWithMod(vector<ll> &a, vector<ll> &b, int mod){
     	int kk = (1 << k);
     	int kkk = (kk << k) % mod;
     	int need = a.size() + b.size() - 1;
-    	vector<ll> answer(need, 0);
+    	ans.resize(need);
+    	fill(ans.begin(), ans.end(), 0);
     	vector<int> aa(a.size());
     	vector<int> bb(b.size());
 
@@ -108,7 +109,7 @@ namespace fft{
     	vector<ll> c = multiply(aa, bb);
     	for (int i = 0; i < need; i++){
     		ll x = c[i] % mod;
-    		answer[i] += x * (kkk - kk);
+    		ans[i] += x * (kkk - kk);
     	}
 
     	for (int i = 0; i < a.size(); i++)
@@ -118,7 +119,7 @@ namespace fft{
     	c = multiply(aa, bb);
     	for (int i = 0; i < need; i++){
     		ll x = c[i] % mod;
-    		answer[i] += x * (1 - kk);
+    		ans[i] += x * (1 - kk);
     	}
 
     	for (int i = 0; i < a.size(); i++)
@@ -127,15 +128,12 @@ namespace fft{
     		bb[i] += b[i] >> k;
     	c = multiply(aa, bb);
     	for (int i = 0; i < need; i++){
-    		answer[i] += c[i] % mod * kk;
-    		answer[i] %= mod;
-    		if (answer[i] < 0)
-    			answer[i] += mod;
+    		ans[i] += c[i] % mod * kk;
+    		ans[i] %= mod;
+    		if (ans[i] < 0)
+    			ans[i] += mod;
     	}
-
-    	vector<int> ans(need);
-    	for (int i = 0; i < need; i++)
-    		ans[i] = answer[i];
     	return ans;
     }
+
 };
