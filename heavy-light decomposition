@@ -1,0 +1,80 @@
+const int maxn = 1e5 + 7;
+
+vector<int> s[maxn];
+
+int cnt[maxn], next[maxn];
+
+vector<int> euler;
+int tin[maxn], prev[maxn];
+
+void dfs(int v, int p){
+	prev[v] = p;
+	cnt[v] = 1, next[v] = -1;
+	tin[v] = euler.size();
+	euler.push_back(v);
+	for (int u : s[v]){
+		if (u != p){
+			dfs(u, v);
+			euler.push_back(v);
+			cnt[v] += cnt[u];
+			if (next[v] == -1 || cnt[next[v]] < cnt[u])
+				next[v] = u;
+		}
+	}
+}
+
+int sparse[18][maxn * 2], power[maxn * 2];
+
+void buildSparse(){
+	int n = euler.size();
+	int k = 0;
+	while ((1 << k) < n)
+		k++;
+	for (int i = 0; i < n; i++)
+		sparse[0][i] = euler[i];
+	for (int i = 0; i < k - 1; i++){
+		for (int j = 0; j < n; j++){
+			sparse[i + 1][j] = sparse[i][j];
+			if ((1 << i) + j < n && tin[sparse[i][j]] > tin[sparse[i][j + (1 << i)]])
+				sparse[i + 1][j] = sparse[i][j + (1 << i)];
+		}
+	}
+	for (int i = 2; i < n + 1; i++){
+		power[i] = power[i - 1];
+		if (!(i & (i - 1)))
+			power[i]++;
+	}
+}
+
+int getLCA(int v, int u){
+	if (tin[v] > tin[u])
+		swap(v, u);
+	int k = power[tin[u] - tin[v] + 1];
+	int p1 = sparse[k][tin[v]];
+	int p2 = sparse[k][tin[u] - (1 << k) + 1];
+	return tin[p1] < tin[p2] ? p1 : p2;
+}
+
+struct Path{
+
+	vector<int> s;
+
+	void build(){
+		//...
+	}
+};
+
+Path pathes[maxn];
+pair<int, int> index[maxn];
+
+int now = 0;
+void buildPathes(int v, int cur){
+	index[v] = {cur, pathes[cur].s.size()};
+	pathes[cur].s.push_back(v);
+	if (next[v] != -1)
+		buildPathes(next[v], cur);
+	for (int u : s[v]){
+		if (cnt[u] < cnt[v] && next[v] != u)
+			buildPathes(u, now++);
+	}
+}
