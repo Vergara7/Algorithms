@@ -1,0 +1,47 @@
+vector<int> multiply(vector<int> p1, vector<int> p2){
+	int n = p1.size();
+	vector<int> p(n);
+	for (int i = 0; i < n; i++)
+		p[i] = p2[p1[i]];
+	return p;
+}
+
+vector<int> parse(string s, int n){
+	vector<int> p(n);
+	for (int i = 0; i < n; i++)
+		p[i] = i;
+	int first = -1, prev = -1;
+	for (int i = 0; i < s.size(); i++){
+		if (s[i] == '(')
+			first = -1;
+		if (s[i] != '(' && s[i] != ')'){
+			if (first == -1)
+				first = int(s[i] - '1');
+			else
+				p[prev] = int(s[i] - '1');
+			prev = int(s[i] - '1');
+		}
+		if (s[i] == ')')
+			p[prev] = first;
+	}
+	return p;
+}
+
+void print(vector<int> p){
+	int n = p.size();
+	vector<int> used(n, false);
+	for (int i = 0; i < n; i++){
+		if (!used[i] && p[i] != i){
+			cout << '(' << i + 1;
+			used[i] = true;
+			int v = p[i];
+			while (v != i){
+				used[v] = true;
+				cout << v + 1;
+				v = p[v];
+			}
+			cout << ')';
+		}
+	}
+	cout << endl;
+}
