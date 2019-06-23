@@ -1,38 +1,3 @@
-#pragma comment(linker, "/stack:200000000")
-#pragma GCC optimize("Ofast")
-#pragma GCC target("sse,sse2,sse3,ssse3,sse4,avx,avx2")
-
-#include <vector>
-#include <stdio.h>
-#include <iostream>
-#include <unordered_set>
-#include <algorithm>
-#include <bitset>
-#include <set>
-#include <map>
-#include <random>
-#include <time.h>
-#include <cassert>
-
-#define prev askdnsajd
-#define rank asasdmdnasd
-#define next lsjndajbs
-#define hash asmdklansd
-#define index asdklnas
-#define right sld
-#define left sldl
-using namespace std;
-
-typedef long long ll;
-typedef long double dbl;
-
-template<class T>
-void print(vector<T> s){
-	for (T x : s)
-		cout << x << " ";
-	cout << endl;
-}
-
 const int mod = 1e9 + 7;
 
 struct matrix{
@@ -161,9 +126,3 @@ bool operator == (matrix a, matrix b){
 				return false;
 	return true;
 }
-
-int main(){
-	ios_base::sync_with_stdio(0);
-	cin.tie(0);
-	return 0;	
-}	
