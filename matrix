@@ -1,0 +1,169 @@
+#pragma comment(linker, "/stack:200000000")
+#pragma GCC optimize("Ofast")
+#pragma GCC target("sse,sse2,sse3,ssse3,sse4,avx,avx2")
+
+#include <vector>
+#include <stdio.h>
+#include <iostream>
+#include <unordered_set>
+#include <algorithm>
+#include <bitset>
+#include <set>
+#include <map>
+#include <random>
+#include <time.h>
+#include <cassert>
+
+#define prev askdnsajd
+#define rank asasdmdnasd
+#define next lsjndajbs
+#define hash asmdklansd
+#define index asdklnas
+#define right sld
+#define left sldl
+using namespace std;
+
+typedef long long ll;
+typedef long double dbl;
+
+template<class T>
+void print(vector<T> s){
+	for (T x : s)
+		cout << x << " ";
+	cout << endl;
+}
+
+const int mod = 1e9 + 7;
+
+struct matrix{
+
+	int n, m;
+	vector<vector<ll> > s;
+
+	matrix(int n) : n(n), m(n) {
+		s.resize(n);
+		for (int i = 0; i < n; i++){
+			s[i].resize(m);
+			fill(s[i].begin(), s[i].end(), 0);
+		}
+	}
+
+	matrix(int n, int m) : n(n), m(m) {
+		s.resize(n);
+		for (int i = 0; i < n; i++){
+			s[i].resize(m);
+			fill(s[i].begin(), s[i].end(), 0);
+		}
+	}	
+
+	vector<ll>& operator[](int x){
+		return s[x];
+	}
+
+	const vector<ll>& operator[](int x) const{
+		return s[x];
+	}
+};
+
+matrix identity(int n){
+	matrix a = matrix(n);
+	for (int i = 0; i < n; i++)
+		a[i][i] = 1;
+	return a;
+}
+
+void print(matrix a){
+	for (int i = 0; i < a.n; i++){
+		for (int j = 0; j < a.m; j++)
+			cout << a[i][j] << " ";
+		cout << endl;
+	}
+}
+
+matrix operator + (matrix a, matrix b){
+	assert(a.n == b.n && a.m == b.m);
+	for (int i = 0; i < a.n; i++)
+		for (int j = 0; j < a.m; j++)
+			a[i][j] += b[i][j];
+	return a;
+}
+
+void operator += (matrix &a, matrix b){
+	assert(a.n == b.n && a.m == b.m);
+	for (int i = 0; i < a.n; i++)
+		for (int j = 0; j < a.m; j++)
+			a[i][j] += b[i][j];
+}
+
+matrix operator - (matrix a, matrix b){
+	assert(a.n == b.n && a.m == b.m);
+	for (int i = 0; i < a.n; i++)
+		for (int j = 0; j < a.m; j++)
+			a[i][j] -= b[i][j];
+	return a;
+}
+
+void operator -= (matrix &a, matrix b){
+	assert(a.n == b.n && a.m == b.m);
+	for (int i = 0; i < a.n; i++)
+		for (int j = 0; j < a.m; j++)
+			a[i][j] -= b[i][j];
+}
+
+matrix operator * (matrix a, matrix b){
+	assert(a.m == b.n);
+	matrix c = matrix(a.n, b.m);
+	for (int i = 0; i < a.n; i++){
+		for (int j = 0; j < b.m; j++){
+			for (int k = 0; k < a.m; k++){
+				c[i][j] += a[i][k] * b[k][j];
+				c[i][j] %= mod;
+			}
+		}
+	}
+	return c;
+}
+
+void operator *= (matrix &a, matrix b){
+	assert(a.m == b.n);
+	matrix c = matrix(a.n, b.m);
+	for (int i = 0; i < a.n; i++){
+		for (int j = 0; j < b.m; j++){
+			for (int k = 0; k < a.m; k++){
+				c[i][j] += a[i][k] * b[k][j];
+				c[i][j] %= mod;
+			}
+		}
+	}
+	for (int i = 0; i < a.n; i++){
+		for (int j = 0; j < b.m; j++)
+			a[i][j] = c[i][j];
+	}
+}
+
+matrix power(matrix a, int n){
+	assert(a.n == a.m);
+	matrix res = identity(a.n);
+	while (n > 0){
+		if (n & 1)
+			res *= a;
+		a *= a;
+		n >>= 1;
+	}
+	return res;
+}
+
+bool operator == (matrix a, matrix b){
+	assert(a.n == b.n && a.m == b.m);
+	for (int i = 0; i < a.n; i++)
+		for (int j = 0; j < a.m; j++)
+			if (a[i][j] != b[i][j])
+				return false;
+	return true;
+}
+
+int main(){
+	ios_base::sync_with_stdio(0);
+	cin.tie(0);
+	return 0;	
+}	
