@@ -1,0 +1,93 @@
+struct edge{
+    int to, ind;
+    int c, f;
+    int cost;
+    edge() : cost(0) {}
+    edge(int to, int ind, int c, int cost) : to(to), ind(ind), c(c), f(0), cost(cost) {}
+};
+
+const int maxN = 2007;
+const ll inf = 1e12;
+
+vector<edge> graph[maxN];
+
+void print(int n){
+	for (int i = 0; i < n; i++){
+		cout << i << ": ";
+		for (edge e : graph[i])
+			cout << "{" << e.to << ", " << e.c << ", " << e.cost << "}, ";
+		cout << endl; 
+	}
+}
+
+void addEdge(int v, int u, int c, int cost){
+    graph[v].push_back(edge(u, graph[u].size(), c, cost));
+    graph[u].push_back(edge(v, graph[v].size() - 1, 0, -cost));
+}
+
+ll phi[maxN], dist[maxN];
+int prev[maxN], ind[maxN];
+
+void dijkstra(int st, int fin, int n){
+    set<pair<ll, int> > lst;
+    dist[st] = 0;
+    for (int i = 0; i < n; i++)
+        lst.insert({dist[i], i});
+    int kek = 0;
+    while (lst.size() > 0){
+        pair<ll, int> v = *(lst.begin());
+        lst.erase(v);
+        if (v.second == fin)
+        	return;
+        for (int i = 0; i < graph[v.second].size(); i++){
+            edge e = graph[v.second][i];
+            if (e.c == e.f)
+                continue;
+            if (dist[e.to] > v.first + phi[v.second] - phi[e.to] + e.cost){
+                lst.erase({dist[e.to], e.to});
+                dist[e.to] = v.first + phi[v.second] - phi[e.to] + e.cost;
+                prev[e.to] = v.second;
+                ind[e.to] = i;
+                lst.insert({dist[e.to], e.to});
+            }
+        }
+    }
+}
+
+pair<ll, ll> getMinCostMaxFlow(int st, int fin, int n){
+    fill(phi, phi + n, inf);
+    phi[st] = 0;
+   	for (int i = 0; i < n; i++){
+       	for (edge e : graph[i]){
+            if (e.c > e.f)
+                phi[e.to] = min(phi[e.to], phi[i] + e.cost);
+       	}
+  	}
+    ll flow = 0, flowCost = 0;
+    while (true){
+        fill(dist, dist + n, inf);
+        dijkstra(st, fin, n);
+        if (dist[fin] == inf)
+            return {flow, flowCost};
+        else{
+            int mini = 1e9;
+            int cur = fin;
+            while (cur != st){
+                int p = prev[cur];
+                mini = min(mini, graph[p][ind[cur]].c - graph[p][ind[cur]].f);
+                cur = p;
+            }
+            flow += mini;
+            cur = fin;
+            while (cur != st) {
+                int p = prev[cur];
+                flowCost += mini * graph[p][ind[cur]].cost;
+                graph[p][ind[cur]].f += mini;
+                graph[cur][graph[p][ind[cur]].ind].f -= mini;
+                cur = p;
+            }
+            for (int i = 0; i < n; i++)
+                phi[i] += dist[i];
+        }
+    }
+}
