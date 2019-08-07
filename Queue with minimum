@@ -1,0 +1,33 @@
+class queueWithMinimum{
+private:
+	vector<pair<int, int> > s[2];
+	static const int inf = 1e9 + 7;
+
+private:
+	int getMin(int k){
+		return s[k].size() == 0 ? inf : s[k].back().second;
+	}
+
+	void push(int x, int k){
+		s[k].push_back({x, min(getMin(k), x)});
+	}
+
+public:
+	void push(int x){
+		push(x, 0);
+	}
+
+	int getMin(){
+		return min(getMin(0), getMin(1));
+	}
+
+	void pop(){
+		if (s[1].size() == 0){
+			while (s[0].size() > 0){
+				push(s[0].back().first, 1);
+				s[0].pop_back();
+			}
+		}
+		s[1].pop_back();
+	}
+};
