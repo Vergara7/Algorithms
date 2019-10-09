@@ -1,0 +1,178 @@
+class SplayTree{
+private:
+    static constexpr int inf = 1e9 + 7;
+
+    struct node{
+        int x;
+        int type;
+        node* sons[2];
+        node* parent;
+
+        node(int x = inf) : x(x), type(-1), parent(nullptr) {
+            this->sons[0] = this->sons[1] = nullptr;
+        }
+    };
+
+    node* root;
+
+private:
+    void update(node* v){
+    
+    }
+
+    void setParent(node* v, node* p, int type){
+        if (p != nullptr)
+           p->sons[type] = v;
+        if (v != nullptr){
+            v->parent = p;
+            v->type = type;
+        }
+
+        update(p);
+    }
+
+    void breakEdge(node* v){
+        if (v == nullptr)
+            return;
+        node* p = v->parent;
+        p->sons[v->type] = nullptr;
+        v->parent = nullptr;
+        v->type = -1;
+
+        update(p);
+    }
+
+    void rotate(node* v){
+        node* pparent = v->parent->parent;
+        int ptype = v->parent->type;
+        
+        setParent(v->sons[1 ^ v->type], v->parent, v->type);
+        setParent(v->parent, v, (v->type) ^ 1);
+        setParent(v, pparent, ptype);
+    }
+
+    void zigzig(node* v){
+        rotate(v->parent);
+        rotate(v);
+    }
+
+    void zigzag(node* v){
+        rotate(v);
+        rotate(v);
+    }
+
+    node* splay(node* v){
+        while (v->type != -1){
+            if (v->parent->type == -1){
+                rotate(v);
+                break;
+            }
+            if (v->parent->type == v->type)
+                zigzig(v);
+            else
+                zigzag(v);
+        }
+        return v;
+    }
+
+    node* goRight(node* v){
+        while (v->sons[1] != nullptr)
+            v = v->sons[1];
+        return v;
+    }
+
+    node* splayMax(node* v){
+        return splay(goRight(v));
+    }
+
+    node* merge(node* v, node* u){
+        if (v == nullptr)
+            return u;
+        if (u == nullptr)
+            return v;
+        v = splayMax(v);
+        setParent(u, v, 1);
+        return v;
+    }
+
+    node* findNext(node* v, int x){
+        node* next;
+        while (v){
+            if (v->x >= x){
+                next = v;
+                v = v->sons[0];
+            } else {
+                v = v->sons[1];
+            }
+        }
+        return next;
+    }
+
+    pair<node*, node*> split(node* v, int x){
+        v = findNext(v, x);
+        pair<node*, node*> u = {v->sons[0], v};
+        breakEdge(u.first);
+        return u;        
+    }
+
+    void print(node* v){
+        if (v == nullptr)
+            return;
+        print(v->sons[0]);
+        cout << v->x << " ";
+        print(v->sons[1]);
+    }
+
+public:
+    SplayTree() {
+        root = new node();
+    }
+
+    bool insert(int x){
+        root = splay(findNext(root, x));
+        if (root->x == x)
+            return false;
+        node* v = new node(x);
+        if (root->sons[0] != nullptr)
+            setParent(root->sons[0], v, 0);
+        setParent(v, root, 0);
+        return true;
+    }
+
+    bool remove(int x){
+        root = splay(findNext(root, x));
+        if (root->x == x){
+            node* left = root->sons[0];
+            node* right = root->sons[1];
+            breakEdge(left);
+            breakEdge(right);
+            root = merge(left, right);
+            return true;
+        }
+        return false;
+    }
+
+    bool exists(int x){
+        root = splay(findNext(root, x));
+        return root->x == x;
+    }
+
+    int next(int x){
+        root = splay(findNext(root, x));
+        return root->x;
+    }
+
+    int prev(int x){
+        root = splay(findNext(root, x));
+        if (root->x == x)
+            return x;
+        if (root->sons[0] == nullptr)
+            return -inf;
+        root = splayMax(root->sons[0]);
+        return root->x;
+    }
+
+    int getInf(){
+        return inf;
+    }
+};
