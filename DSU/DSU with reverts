@@ -1,0 +1,45 @@
+class DSU {
+private:
+    vector<int> prev, cnt;
+    vector<pair<int, int>> edges; 
+
+public:
+    DSU(int n = 0){
+        prev.resize(n);
+        cnt.resize(n);
+        for (int i = 0; i < n; i++)
+            prev[i] = i;
+        fill(cnt.begin(), cnt.end(), 1);
+    }
+
+    int getPrev(int v){
+        if (v == prev[v])
+            return v;
+        return getPrev(prev[v]);
+    }
+
+    void join(int a, int b){
+        a = getPrev(a);
+        b = getPrev(b);
+        if (a != b){
+            if (cnt[a] < cnt[b])
+                swap(a, b);
+            cnt[a] += cnt[b];
+            prev[b] = a;            
+        }
+        edges.push_back({a, b});
+    }
+
+    void revert(){
+        int a = edges.back().first, b = edges.back().second;
+        edges.pop_back();
+        if (a != b){
+            cnt[a] -= cnt[b];
+            prev[b] = b;
+        }
+    }
+
+    int getSize(int v){
+        return cnt[getPrev(v)];
+    }
+};
