@@ -1,9 +1,10 @@
 class SplayTree{
-private:
+public:
     static constexpr int inf = 1e9 + 7;
 
     struct node{
         int x;
+        // data
         int type;
         node* sons[2];
         node* parent;
@@ -15,14 +16,19 @@ private:
 
     node* root;
 
-private:
+    SplayTree() {
+        root = nullptr;
+    }
+
+    SplayTree(node* v) : root(v) {}
+
     void update(node* v){
-    
+        // recalc data
     }
 
     void setParent(node* v, node* p, int type){
         if (p != nullptr)
-           p->sons[type] = v;
+            p->sons[type] = v;
         if (v != nullptr){
             v->parent = p;
             v->type = type;
@@ -62,6 +68,8 @@ private:
     }
 
     node* splay(node* v){
+        if (!v)
+            return v;
         while (v->type != -1){
             if (v->parent->type == -1){
                 rotate(v);
@@ -76,6 +84,8 @@ private:
     }
 
     node* goRight(node* v){
+        if (v == nullptr)
+            return v;
         while (v->sons[1] != nullptr)
             v = v->sons[1];
         return v;
@@ -95,24 +105,20 @@ private:
         return v;
     }
 
-    node* findNext(node* v, int x){
-        node* next;
+    node* findClosest(node* v, int x){
+        node* res = nullptr;
         while (v){
             if (v->x >= x){
-                next = v;
+                if (!res || v->x - x < abs(x - res->x))
+                    res = v;
                 v = v->sons[0];
             } else {
+                if (!res || x - v->x < abs(x - res->x))
+                    res = v;
                 v = v->sons[1];
             }
         }
-        return next;
-    }
-
-    pair<node*, node*> split(node* v, int x){
-        v = findNext(v, x);
-        pair<node*, node*> u = {v->sons[0], v};
-        breakEdge(u.first);
-        return u;        
+        return res;
     }
 
     void print(node* v){
@@ -123,25 +129,30 @@ private:
         print(v->sons[1]);
     }
 
-public:
-    SplayTree() {
-        root = new node();
-    }
-
     bool insert(int x){
-        root = splay(findNext(root, x));
-        if (root->x == x)
+        root = splay(findClosest(root, x));
+        if (root && root->x == x)
             return false;
         node* v = new node(x);
-        if (root->sons[0] != nullptr)
-            setParent(root->sons[0], v, 0);
-        setParent(v, root, 0);
+        if (!root){
+            root = v;
+            return true;
+        }
+        if (root->x > x) { 
+            if (root->sons[0] != nullptr)
+                setParent(root->sons[0], v, 0);
+            setParent(v, root, 0);
+        } else {
+            if (root->sons[1] != nullptr)
+                setParent(root->sons[1], v, 1);
+            setParent(v, root, 1);
+        }
         return true;
     }
 
     bool remove(int x){
-        root = splay(findNext(root, x));
-        if (root->x == x){
+        root = splay(findClosest(root, x));
+        if (root && root->x == x){
             node* left = root->sons[0];
             node* right = root->sons[1];
             breakEdge(left);
@@ -152,27 +163,65 @@ public:
         return false;
     }
 
+    node* find(int x){
+        root = splay(findClosest(root, x));
+        return root;
+    }
+
     bool exists(int x){
-        root = splay(findNext(root, x));
-        return root->x == x;
+        root = splay(findClosest(root, x));
+        return root && root->x == x;
     }
 
-    int next(int x){
-        root = splay(findNext(root, x));
-        return root->x;
+    pair<SplayTree, SplayTree> split(int x){
+        auto s = splay(findClosest(root, x));
+        if (s == nullptr)
+            return {nullptr, nullptr};
+        node* left = s;
+        node* right = s;
+        if (s->x >= x){
+            left = s->sons[0];
+            breakEdge(left);
+        } else {
+            right = s->sons[1];
+            breakEdge(right);
+        }
+        return {SplayTree(left), SplayTree(right)};
+    }
+    
+    void merge(SplayTree tree){
+        root = merge(root, tree.root);
     }
 
-    int prev(int x){
-        root = splay(findNext(root, x));
-        if (root->x == x)
-            return x;
-        if (root->sons[0] == nullptr)
-            return -inf;
-        root = splayMax(root->sons[0]);
-        return root->x;
+    node* getRoot(){
+        return root;
     }
 
-    int getInf(){
-        return inf;
+    bool isValid(){
+        return root;
+    }
+
+    void print(){
+        print(root);
+        cout << endl;
+    }
+
+    int getMin(){
+        while (root && root->sons[0])
+            root = root->sons[0];
+        splay(root);
+        return root ? root->x : inf;
+    }
+
+    int getMax(){
+        while (root && root->sons[1])
+            root = root->sons[1];
+        splay(root);
+        return root ? root->x : -inf;        
     }
 };
+
+SplayTree merge(SplayTree t1, SplayTree t2){
+    t1.merge(t2);
+    return t1;
+}
