@@ -90,6 +90,8 @@ namespace fft{
         // print(answer);
         return answer;
     }
+    
+    vector<ll> ans;
 
     const int k = 15;
 
