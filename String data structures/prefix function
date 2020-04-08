@@ -1,0 +1,17 @@
+vector<int> get_pref(string s){
+    int n = s.size();
+    vector<int> pref(n, 0);
+    for (int i = 1; i < n; i++){
+        int cur = pref[i - 1];
+        while (cur > 0){
+            if (s[cur] == s[i]){
+                pref[i] = cur + 1;
+                break;
+            }
+            cur = pref[cur - 1];
+        }
+        if (cur == 0)
+            pref[i] = s[cur] == s[i] ? 1 : 0;
+    }
+    return pref;
+}
