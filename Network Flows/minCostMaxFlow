@@ -1,93 +1,104 @@
-struct edge{
-    int to, ind;
-    int c, f;
-    int cost;
-    edge() : cost(0) {}
-    edge(int to, int ind, int c, int cost) : to(to), ind(ind), c(c), f(0), cost(cost) {}
-};
+template<int maxn>
+class network_flow{
+public:
+    struct edge{
+        int to;
+        int cap, flow, cost;
+        size_t back_edge;
+    };
 
-const int maxN = 2007;
-const ll inf = 1e12;
+private:
+    int n;
+    const ll inf = 1e12;
+    vector<edge> s[maxn];
 
-vector<edge> graph[maxN];
+public:
+    explicit network_flow(int n) : n(n) {}
 
-void print(int n){
-	for (int i = 0; i < n; i++){
-		cout << i << ": ";
-		for (edge e : graph[i])
-			cout << "{" << e.to << ", " << e.c << ", " << e.cost << "}, ";
-		cout << endl; 
-	}
-}
-
-void addEdge(int v, int u, int c, int cost){
-    graph[v].push_back(edge(u, graph[u].size(), c, cost));
-    graph[u].push_back(edge(v, graph[v].size() - 1, 0, -cost));
-}
-
-ll phi[maxN], dist[maxN];
-int prev[maxN], ind[maxN];
-
-void dijkstra(int st, int fin, int n){
-    set<pair<ll, int> > lst;
-    dist[st] = 0;
-    for (int i = 0; i < n; i++)
-        lst.insert({dist[i], i});
-    int kek = 0;
-    while (lst.size() > 0){
-        pair<ll, int> v = *(lst.begin());
-        lst.erase(v);
-        if (v.second == fin)
-        	return;
-        for (int i = 0; i < graph[v.second].size(); i++){
-            edge e = graph[v.second][i];
-            if (e.c == e.f)
-                continue;
-            if (dist[e.to] > v.first + phi[v.second] - phi[e.to] + e.cost){
-                lst.erase({dist[e.to], e.to});
-                dist[e.to] = v.first + phi[v.second] - phi[e.to] + e.cost;
-                prev[e.to] = v.second;
-                ind[e.to] = i;
-                lst.insert({dist[e.to], e.to});
-            }
-        }
+    void add_edge(int from, int to, int c, int cost){
+        s[from].push_back({to, c, 0, cost, s[to].size()});
+        s[to].push_back({from, 0, 0, -cost, s[from].size() - 1});
     }
-}
 
-pair<ll, ll> getMinCostMaxFlow(int st, int fin, int n){
-    fill(phi, phi + n, inf);
-    phi[st] = 0;
-   	for (int i = 0; i < n; i++){
-       	for (edge e : graph[i]){
-            if (e.c > e.f)
-                phi[e.to] = min(phi[e.to], phi[i] + e.cost);
-       	}
-  	}
-    ll flow = 0, flowCost = 0;
-    while (true){
-        fill(dist, dist + n, inf);
-        dijkstra(st, fin, n);
-        if (dist[fin] == inf)
-            return {flow, flowCost};
-        else{
-            int mini = 1e9;
+    pair<int, ll> run(int st = 0, int fin = -1){
+        if (fin == -1)
+            fin = n - 1;
+        ll cost = 0;
+        int flow = 0;
+        int iter = 0, freq = (1 << 15) - 1;
+        while (true){
+            if ((iter & freq) == freq)
+                bellman(st);
+            if (!dijkstra(st, fin))
+                break;
             int cur = fin;
+            int mini = 1e9;
             while (cur != st){
                 int p = prev[cur];
-                mini = min(mini, graph[p][ind[cur]].c - graph[p][ind[cur]].f);
+                mini = min(mini, s[p][ind[cur]].cap - s[p][ind[cur]].flow);
                 cur = p;
             }
             flow += mini;
             cur = fin;
-            while (cur != st) {
+            while (cur != st){
                 int p = prev[cur];
-                flowCost += mini * graph[p][ind[cur]].cost;
-                graph[p][ind[cur]].f += mini;
-                graph[cur][graph[p][ind[cur]].ind].f -= mini;
+                s[p][ind[cur]].flow += mini;
+                s[cur][s[p][ind[cur]].back_edge].flow -= mini;
+                cost += (ll)mini * s[p][ind[cur]].cost;
                 cur = p;
             }
-            for (int i = 0; i < n; i++)
-                phi[i] += dist[i];
+            for (int v = 0; v < n; v++)
+                phi[v] += dist[v];
+        }
+        return {flow, cost};
+    }
+
+private:
+    ll dist[maxn], phi[maxn];
+    int ind[maxn], prev[maxn], processed[maxn];
+
+    void bellman(int st){
+        fill(phi, phi + n, inf);
+        phi[st] = 0;
+        for (int iter = 0; iter < n; iter++){
+            for (int i = 0; i < n; i++){
+                for (auto& e : s[i]){
+                    if (e.cap > e.flow)
+                        phi[e.to] = min(phi[e.to], phi[i] + e.cost);
+                }
+            }
         }
     }
-}
+
+    bool dijkstra(int st, int fin){
+        fill(dist, dist + n, inf);
+        dist[st] = 0;
+        fill(processed, processed + n, 0);
+        priority_queue<pair<ll, int>, vector<pair<ll, int>>, greater<pair<ll, int>>> q;
+        q.emplace(dist[st], st);
+        bool ok = false;
+        while (!q.empty()) {
+            auto[d, v] = q.top();
+            q.pop();
+            if (v == fin)
+                ok = true;
+            if (processed[v])
+                continue;
+            for (int i = 0; i < (int)s[v].size(); i++){
+                edge& e = s[v][i];
+                if (e.cap == e.flow)
+                    continue;
+                ll new_d = d + e.cost + phi[v] - phi[e.to];
+                if (new_d < dist[e.to]){
+                    dist[e.to] = new_d;
+                    // assert(!processed[e.to]);
+                    q.emplace(dist[e.to], e.to);
+                    ind[e.to] = i;
+                    prev[e.to] = v;
+                }
+            }
+            processed[v] = 1;
+        }
+        return ok;
+    }
+};
